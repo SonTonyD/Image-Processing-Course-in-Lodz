@@ -12,7 +12,7 @@ def ImageProcessing():
 @click.option('--brightness', default=0, help='Set the brightness intensity: positive number to increase it and negative to decrease.')
 @click.option('--contrast', default=1.0, help='Set the contrast intensity: Can only take positive number. contrast<1 to decrease and contrast >1 to increase')
 @click.option('--negative', default=-1.0, help='Set the negative intensity: Can only take positive number. negative<1 to decrease and negative >1 to increase')
-def ElementaryOperation(name, brightness, contrast, negative):
+def Elementary(name, brightness, contrast, negative):
     img = Image.open(name)
     image_matrix = np.array(img)
     
@@ -56,7 +56,7 @@ def ElementaryOperation(name, brightness, contrast, negative):
 @click.option('--dflip', default=False, help='Can be true or false. Flip the selected image diagonally')
 @click.option('--shrink', default=1, help='Example: 2 to shrink the image resolution by 2')
 @click.option('--enlarge', default=1, help='Example: 2 to enlarge the image resolution by 2')
-def GeometricOperation(name, hflip, vflip, dflip, shrink, enlarge):
+def Geometric(name, hflip, vflip, dflip, shrink, enlarge):
     img = Image.open(name)
     image_matrix = np.array(img)
     tmp = np.array(img)
@@ -97,6 +97,56 @@ def GeometricOperation(name, hflip, vflip, dflip, shrink, enlarge):
     Image.fromarray(image_matrix).save("./Results/GeometricOperation_result.bmp")
 
 
+@ImageProcessing.command()
+@click.option('--name', default="./Images/lenac.bmp", help='path of the image. Example:--name="./Images/lenac.bmp"  ')
+@click.option('--mid', default=0, help='Use Midpoint filter: ex: 1 is one pixel around the current pixel')
+@click.option('--amean', default=0, help='Use Arithmetic mean filter: ex: 1 is one pixel around the current pixel')
+def Noise(name, mid, amean) :
+    img = Image.open(name)
+    image_matrix = np.array(img)
+    tmp = np.array(img)
+    
+    width = image_matrix.shape[0]
+    height = image_matrix.shape[1]
+    
+    #Set Parameters according to the chosen option 
+    if mid != 0 :
+        index_start = mid
+    if amean != 0:
+        index_start = amean
+    
+    
+    if len(image_matrix.shape) == 3:
+        for i in range(index_start,width-index_start):
+            for j in range(index_start,height-index_start):
+                for k in range(3):
+                    max = -1
+                    min = 257
+                    for x in range(-mid,mid):
+                        for y in range(-mid,mid):
+                            current_pixel = image_matrix[i+x,j+y,k]
+                            if max < current_pixel:
+                                max = current_pixel
+                            if min > current_pixel:
+                                min = current_pixel
+                    tmp[i,j,k] = (int(max) + int(min))/2
+    else:
+        for i in range(width):
+            for j in range(height):
+                for x in range(-mid,mid):
+                    for y in range(-mid,mid):
+                        current_pixel = image_matrix[i+x,j+y]
+                        if max < current_pixel:
+                            max = current_pixel
+                        if min > current_pixel:
+                            min = current_pixel
+                tmp[i,j] = (int(max) + int(min))/2
+    image_matrix = tmp
+    Image.fromarray(image_matrix).save("./Results/NoiseOperation_result.bmp")
+    
+    
+    
+    
 
 if __name__ == '__main__':
     ImageProcessing()
