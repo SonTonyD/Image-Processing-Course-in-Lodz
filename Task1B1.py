@@ -133,6 +133,8 @@ def Noise(name, mid, amean) :
     else:
         for i in range(width):
             for j in range(height):
+                max = -1
+                min = 257
                 for x in range(-mid,mid):
                     for y in range(-mid,mid):
                         current_pixel = image_matrix[i+x,j+y]
