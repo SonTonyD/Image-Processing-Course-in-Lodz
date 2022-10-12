@@ -99,8 +99,8 @@ def Geometric(name, hflip, vflip, dflip, shrink, enlarge):
 
 @ImageProcessing.command()
 @click.option('--name', default="./Images/lenac.bmp", help='path of the image. Example:--name="./Images/lenac.bmp"  ')
-@click.option('--mid', default=0, help='Use Midpoint filter: ex: 1 is one pixel around the current pixel')
-@click.option('--amean', default=0, help='Use Arithmetic mean filter: ex: 1 is one pixel around the current pixel')
+@click.option('--mid', default=0, help='Use Midpoint filter: ex: 1 is one pixel around the current pixel (3x3)')
+@click.option('--amean', default=0, help='Use Arithmetic mean filter: ex: 1 is one pixel around the current pixel (3x3)')
 def Noise(name, mid, amean) :
     img = Image.open(name)
     image_matrix = np.array(img)
@@ -122,27 +122,41 @@ def Noise(name, mid, amean) :
                 for k in range(3):
                     max = -1
                     min = 257
-                    for x in range(-mid,mid):
-                        for y in range(-mid,mid):
+                    avg = 0
+                    for x in range(-index_start,index_start):
+                        for y in range(-index_start,index_start):
                             current_pixel = image_matrix[i+x,j+y,k]
-                            if max < current_pixel:
-                                max = current_pixel
-                            if min > current_pixel:
-                                min = current_pixel
-                    tmp[i,j,k] = (int(max) + int(min))/2
+                            if mid != 0:
+                                if max < current_pixel:
+                                    max = current_pixel
+                                if min > current_pixel:
+                                    min = current_pixel
+                            if amean != 0:
+                                avg += current_pixel
+                    if mid != 0:            
+                        tmp[i,j,k] = (int(max) + int(min))/2
+                    if amean != 0:
+                        tmp[i,j,k] = avg/((2*amean+1)*(2*amean+1))
     else:
         for i in range(width):
             for j in range(height):
                 max = -1
                 min = 257
-                for x in range(-mid,mid):
-                    for y in range(-mid,mid):
+                avg = 0
+                for x in range(-index_start,index_start):
+                    for y in range(-index_start,index_start):
                         current_pixel = image_matrix[i+x,j+y]
-                        if max < current_pixel:
-                            max = current_pixel
-                        if min > current_pixel:
-                            min = current_pixel
-                tmp[i,j] = (int(max) + int(min))/2
+                        if mid != 0:
+                            if max < current_pixel:
+                                max = current_pixel
+                            if min > current_pixel:
+                                min = current_pixel
+                        if amean != 0:
+                            avg += current_pixel
+                if mid != 0:            
+                    tmp[i,j] = (int(max) + int(min))/2
+                if amean != 0:
+                    tmp[i,j] = avg/((2*amean+1)*(2*amean+1))
     image_matrix = tmp
     Image.fromarray(image_matrix).save("./Results/NoiseOperation_result.bmp")
     
