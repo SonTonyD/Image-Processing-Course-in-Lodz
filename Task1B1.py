@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 import click
+import math
 
 @click.group()
 def ImageProcessing():
@@ -54,7 +55,8 @@ def ElementaryOperation(name, brightness, contrast, negative):
 @click.option('--vflip', default=False, help='Can be true or false. Flip the selected image vertically')
 @click.option('--dflip', default=False, help='Can be true or false. Flip the selected image diagonally')
 @click.option('--shrink', default=1, help='Example: 2 to shrink the image resolution by 2')
-def GeometricOperation(name, hflip, vflip, dflip, shrink):
+@click.option('--enlarge', default=1, help='Example: 2 to enlarge the image resolution by 2')
+def GeometricOperation(name, hflip, vflip, dflip, shrink, enlarge):
     img = Image.open(name)
     image_matrix = np.array(img)
     tmp = np.array(img)
@@ -64,9 +66,9 @@ def GeometricOperation(name, hflip, vflip, dflip, shrink):
     width = image_matrix.shape[0]
     height = image_matrix.shape[1]
     
-    if shrink != 1:
-        width = round(image_matrix.shape[0]/shrink)
-        height = round(image_matrix.shape[1]/shrink)
+    if shrink != 1 or enlarge != 1:
+        width = round((image_matrix.shape[0]/shrink)*enlarge)
+        height = round((image_matrix.shape[1]/shrink)*enlarge)
         emptyImage = np.array(Image.new('RGB', (round(width), round(height)), color = 'white'))
         tmp = emptyImage
     
@@ -86,11 +88,11 @@ def GeometricOperation(name, hflip, vflip, dflip, shrink):
         for i in range(width):
             for j in range(height):
                 for k in range(3):
-                    tmp[i,j,k] = image_matrix[(iParamA+iParamB*i)*shrink, (jParamA+jParamB*j)*shrink ,k]          
+                    tmp[i,j,k] = image_matrix[math.floor(((iParamA+iParamB*i)*shrink)/enlarge), math.floor(((jParamA+jParamB*j)*shrink)/enlarge) ,k]          
     else:
         for i in range(width):
             for j in range(height):
-                tmp[i,j] = image_matrix[(iParamA+iParamB*i)*shrink, (jParamA+jParamB*j)*shrink ,k]  
+                tmp[i,j] = image_matrix[math.floor(((iParamA+iParamB*i)*shrink)/enlarge), math.floor(((jParamA+jParamB*j)*shrink)/enlarge) ,k]  
     image_matrix = tmp
     Image.fromarray(image_matrix).save("./Results/GeometricOperation_result.bmp")
 
