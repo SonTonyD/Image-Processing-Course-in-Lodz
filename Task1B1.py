@@ -15,6 +15,7 @@ def ImageProcessing():
 def Elementary(name, brightness, contrast, negative):
     img = Image.open(name)
     image_matrix = np.array(img)
+    img.show("Original Image")
     
     #Parameters of the function
     dir_coeff = contrast * (-negative)
@@ -47,6 +48,7 @@ def Elementary(name, brightness, contrast, negative):
                 else:
                     image_matrix[i,j] = tmp
     Image.fromarray(image_matrix).save("./Results/ElementaryOperation_result.bmp")
+    Image.fromarray(image_matrix).show("New Image")
 
 
 @ImageProcessing.command()
@@ -60,6 +62,7 @@ def Geometric(name, hflip, vflip, dflip, shrink, enlarge):
     img = Image.open(name)
     image_matrix = np.array(img)
     tmp = np.array(img)
+    img.show("Original Image")
     
     
     
@@ -95,6 +98,7 @@ def Geometric(name, hflip, vflip, dflip, shrink, enlarge):
                 tmp[i,j] = image_matrix[math.floor(((iParamA+iParamB*i)*shrink)/enlarge), math.floor(((jParamA+jParamB*j)*shrink)/enlarge) ,k]  
     image_matrix = tmp
     Image.fromarray(image_matrix).save("./Results/GeometricOperation_result.bmp")
+    Image.fromarray(image_matrix).show("New Image")
 
 
 @ImageProcessing.command()
@@ -105,6 +109,7 @@ def Noise(name, mid, amean) :
     img = Image.open(name)
     image_matrix = np.array(img)
     tmp = np.array(img)
+    img.show("Original Image")
     
     width = image_matrix.shape[0]
     height = image_matrix.shape[1]
@@ -159,8 +164,63 @@ def Noise(name, mid, amean) :
                     tmp[i,j] = avg/((2*amean+1)*(2*amean+1))
     image_matrix = tmp
     Image.fromarray(image_matrix).save("./Results/NoiseOperation_result.bmp")
+    Image.fromarray(image_matrix).show("New Image")
     
     
+@ImageProcessing.command()
+@click.option('--name', default="./Images/lenac.bmp", help='path of the image. Example:--name="./Images/lenac.bmp"  ')
+@click.option('--mse', default="", help='Mean Square Root, path of the noisy image')
+@click.option('--pmse', default="", help='Peak Mean Square Root, path of the noisy image')
+@click.option('--snr', default="", help='Signal to Noise Ratio, path of the noisy image')
+def Measure(name, mse, pmse, snr):
+    img = Image.open(name)
+    image_matrix = np.array(img)
+    img.show("Original Image")
+    
+    width = image_matrix.shape[0]
+    height = image_matrix.shape[1]
+    
+    measure_value = 0
+    if mse != "":
+        img_2 = Image.open(mse)
+        image_matrix_2 = np.array(img_2)
+        img_2.show("Noisy Image")
+        measure_type = "mse"
+    if pmse != "":
+        img_2 = Image.open(pmse)
+        image_matrix_2 = np.array(img_2)
+        img_2.show("Noisy Image")
+        measure_type = "pmse"
+        max=0
+    
+    
+    
+    if len(image_matrix.shape) == 3:
+        for i in range(width):
+            for j in range(height):
+                for k in range(3):
+                    if measure_type == "mse":
+                        measure_value += math.pow((int(image_matrix[i,j,k]) - int(image_matrix_2[i,j,k])), 2)
+                        
+                    if measure_type == "pmse":
+                        measure_value += math.pow((int(image_matrix[i,j,k]) - int(image_matrix_2[i,j,k])), 2)
+                        if max < int(image_matrix[i,j,k]):
+                            max = int(image_matrix[i,j,k])
+                        
+        if measure_type == "mse":                
+            measure_value = int(measure_value)/int(width*height*3)
+            
+        if measure_type == "pmse":                
+            measure_value = int(measure_value)/int(width*height*3*math.pow(max,2))
+    else:
+        for i in range(width):
+            for j in range(height):
+                if measure_type == "mse":
+                    measure_value += math.pow((int(image_matrix[i,j]) - int(image_matrix_2[i,j])), 2)
+        if measure_type == "mse":                
+            measure_value = int(measure_value)/int(width*height)
+    
+    print("Measure = ",measure_value)
     
     
 
