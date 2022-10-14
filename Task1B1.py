@@ -172,7 +172,9 @@ def Noise(name, mid, amean) :
 @click.option('--mse', default="", help='Mean Square Root, path of the noisy image')
 @click.option('--pmse', default="", help='Peak Mean Square Root, path of the noisy image')
 @click.option('--snr', default="", help='Signal to Noise Ratio, path of the noisy image')
-def Measure(name, mse, pmse, snr):
+@click.option('--psnr', default="", help='Peak Signal to Noise Ratio, path of the noisy image')
+@click.option('--md', default="", help='Maximum Difference, path of the noisy image')
+def Measure(name, mse, pmse, snr, psnr, md):
     img = Image.open(name)
     image_matrix = np.array(img)
     img.show("Original Image")
@@ -192,6 +194,28 @@ def Measure(name, mse, pmse, snr):
         img_2.show("Noisy Image")
         measure_type = "pmse"
         max=0
+    if snr != "":
+        img_2 = Image.open(snr)
+        image_matrix_2 = np.array(img_2)
+        img_2.show("Noisy Image")
+        measure_type = "snr"
+        sum_1 = 0
+        sum_2 = 0
+    if psnr != "":
+        img_2 = Image.open(psnr)
+        image_matrix_2 = np.array(img_2)
+        img_2.show("Noisy Image")
+        measure_type = "psnr"
+        max=0
+        sum_2 = 0
+    if md != "":
+        img_2 = Image.open(md)
+        image_matrix_2 = np.array(img_2)
+        img_2.show("Noisy Image")
+        measure_type = "md"
+        max=0
+        min=255
+    
     
     
     
@@ -206,19 +230,75 @@ def Measure(name, mse, pmse, snr):
                         measure_value += math.pow((int(image_matrix[i,j,k]) - int(image_matrix_2[i,j,k])), 2)
                         if max < int(image_matrix[i,j,k]):
                             max = int(image_matrix[i,j,k])
+                            
+                    if measure_type == "snr":
+                        sum_1 += math.pow(int(image_matrix[i,j,k]),2)
+                        sum_2 += math.pow(int(image_matrix[i,j,k])-int(image_matrix_2[i,j,k]),2)
+                        
+                    if measure_type == "psnr":
+                        if max < int(image_matrix[i,j,k]):
+                            max = int(image_matrix[i,j,k])
+                        sum_2 += math.pow(int(image_matrix[i,j,k])-int(image_matrix_2[i,j,k]),2)
+                        
+                    if measure_type == "md":
+                        if max < int(image_matrix[i,j,k]):
+                            max = int(image_matrix[i,j,k])
+                        if min > int(image_matrix_2[i,j,k]):
+                            min = int(image_matrix_2[i,j,k])
+                        
                         
         if measure_type == "mse":                
             measure_value = int(measure_value)/int(width*height*3)
             
         if measure_type == "pmse":                
             measure_value = int(measure_value)/int(width*height*3*math.pow(max,2))
+        
+        if measure_type == "snr":                
+            measure_value = 10*math.log10(sum_1/sum_2)
+            
+        if measure_type == "psnr":                
+            measure_value = 10*math.log10(math.pow(max,2)/sum_2)
+            
+        if measure_type == "md":                
+            measure_value = max - min
     else:
         for i in range(width):
             for j in range(height):
                 if measure_type == "mse":
                     measure_value += math.pow((int(image_matrix[i,j]) - int(image_matrix_2[i,j])), 2)
+                if measure_type == "pmse":
+                    measure_value += math.pow((int(image_matrix[i,j]) - int(image_matrix_2[i,j])), 2)
+                    if max < int(image_matrix[i,j]):
+                        max = int(image_matrix[i,j])
+                        
+                if measure_type == "snr":
+                    sum_1 += math.pow(int(image_matrix[i,j]),2)
+                    sum_2 += math.pow(int(image_matrix[i,j])-int(image_matrix_2[i,j]),2)
+                    
+                if measure_type == "psnr":
+                    if max < int(image_matrix[i,j]):
+                        max = int(image_matrix[i,j])
+                    sum_2 += math.pow(int(image_matrix[i,j])-int(image_matrix_2[i,j]),2)
+                    
+                if measure_type == "md":
+                    if max < int(image_matrix[i,j]):
+                        max = int(image_matrix[i,j])
+                    if min > int(image_matrix_2[i,j]):
+                        min = int(image_matrix_2[i,j])
         if measure_type == "mse":                
             measure_value = int(measure_value)/int(width*height)
+            
+        if measure_type == "pmse":                
+            measure_value = int(measure_value)/int(width*height*math.pow(max,2))
+        
+        if measure_type == "snr":                
+            measure_value = 10*math.log10(sum_1/sum_2)
+            
+        if measure_type == "psnr":                
+            measure_value = 10*math.log10(math.pow(max,2)/sum_2)
+            
+        if measure_type == "md":                
+            measure_value = max - min
     
     print("Measure = ",measure_value)
     
