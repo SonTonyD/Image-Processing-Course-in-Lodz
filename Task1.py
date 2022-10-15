@@ -141,7 +141,7 @@ def Noise(name, mid, amean) :
                     if mid != 0:            
                         tmp[i,j,k] = (int(max) + int(min))/2
                     if amean != 0:
-                        tmp[i,j,k] = avg/9
+                        tmp[i,j,k] = avg/((2*amean+1)*(2*amean+1))
     else:
         for i in range(width):
             for j in range(height):
