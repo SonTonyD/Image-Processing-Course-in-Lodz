@@ -128,8 +128,8 @@ def Noise(name, mid, amean) :
                     max = -1
                     min = 257
                     avg = 0
-                    for x in range(-index_start,index_start):
-                        for y in range(-index_start,index_start):
+                    for x in range(-index_start,index_start+1):
+                        for y in range(-index_start,index_start+1):
                             current_pixel = image_matrix[i+x,j+y,k]
                             if mid != 0:
                                 if max < current_pixel:
@@ -141,15 +141,15 @@ def Noise(name, mid, amean) :
                     if mid != 0:            
                         tmp[i,j,k] = (int(max) + int(min))/2
                     if amean != 0:
-                        tmp[i,j,k] = avg/((2*amean+1)*(2*amean+1))
+                        tmp[i,j,k] = avg/9
     else:
         for i in range(width):
             for j in range(height):
                 max = -1
                 min = 257
                 avg = 0
-                for x in range(-index_start,index_start):
-                    for y in range(-index_start,index_start):
+                for x in range(-index_start,index_start+1):
+                    for y in range(-index_start,index_start+1):
                         current_pixel = image_matrix[i+x,j+y]
                         if mid != 0:
                             if max < current_pixel:
