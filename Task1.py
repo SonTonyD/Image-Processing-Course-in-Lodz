@@ -143,8 +143,8 @@ def Noise(name, mid, amean) :
                     if amean != 0:
                         tmp[i,j,k] = avg/((2*amean+1)*(2*amean+1))
     else:
-        for i in range(width):
-            for j in range(height):
+        for i in range(index_start,width-index_start):
+            for j in range(index_start,height-index_start):
                 max = -1
                 min = 257
                 avg = 0
@@ -302,10 +302,10 @@ def Measure(name, mse, pmse, snr, psnr, md):
     
     print("Measure = ",measure_value)
     
-    
 
 if __name__ == '__main__':
     ImageProcessing()
+    
 
 
 
